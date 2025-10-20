@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City Intelligence & Geo-Time Assistant</title>
+    
+    <!-- Leaflet CSS for maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        /* 7 Color Themes */
+        :root {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --border: #333333;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-dark: rgba(0, 0, 0, 0.5);
+            --select-bg: #2a2a2a;
+            --select-text: #ffffff;
+            --select-border: #444444;
+        }
+
+        /* Theme 1: Purple Dream */
+        [data-theme="purple"] {
+            --primary: #8b5cf6;
+            --primary-dark: #7c3aed;
+            --secondary: #ec4899;
+            --accent: #a78bfa;
+            --gradient-1: #8b5cf6;
+            --gradient-2: #ec4899;
+            --gradient-3: #f472b6;
+            --gradient-4: #c084fc;
+        }
+
+        /* Theme 2: Ocean Blue */
+        [data-theme="ocean"] {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --secondary: #06b6d4;
+            --accent: #38bdf8;
+            --gradient-1: #0ea5e9;
+            --gradient-2: #06b6d4;
+            --gradient-3: #0284c7;
+            --gradient-4: #38bdf8;
+        }
+
+        /* Theme 3: Emerald Green */
+        [data-theme="emerald"] {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --secondary: #34d399;
+            --accent: #6ee7b7;
+            --gradient-1: #10b981;
+            --gradient-2: #34d399;
+            --gradient-3: #059669;
+            --gradient-4: #6ee7b7;
+        }
+
+        /* Theme 4: Sunset Orange */
+        [data-theme="sunset"] {
+            --primary: #f97316;
+            --primary-dark: #ea580c;
+            --secondary: #fb923c;
+            --accent: #fed7aa;
+            --gradient-1: #f97316;
+            --gradient-2: #fb923c;
+            --gradient-3: #ea580c;
+            --gradient-4: #fbbf24;
+        }
+
+        /* Theme 5: Rose Pink */
+        [data-theme="rose"] {
+            --primary: #f43f5e;
+            --primary-dark: #e11d48;
+            --secondary: #fb7185;
+            --accent: #fda4af;
+            --gradient-1: #f43f5e;
+            --gradient-2: #fb7185;
+            --gradient-3: #e11d48;
+            --gradient-4: #fda4af;
+        }
+
+        /* Theme 6: Amber Gold */
+        [data-theme="amber"] {
+            --primary: #f59e0b;
+            --primary-dark: #d97706;
+            --secondary: #fbbf24;
+            --accent: #fcd34d;
+            --gradient-1: #f59e0b;
+            --gradient-2: #fbbf24;
+            --gradient-3: #d97706;
+            --gradient-4: #fcd34d;
+        }
+
+        /* Theme 7: Cyan Teal */
+        [data-theme="cyan"] {
+            --primary: #06b6d4;
+            --primary-dark: #0891b2;
+            --secondary: #22d3ee;
+            --accent: #67e8f9;
+            --gradient-1: #06b6d4;
+            --gradient-2: #22d3ee;
+            --gradient-3: #0891b2;
+            --gradient-4: #67e8f9;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            overflow-x: hidden;
+        }
+
+        /* Background Video */
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .video-background::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--gradient-1) 0%, var(--gradient-2) 50%, var(--gradient-3) 100%);
+            z-index: 1;
+            opacity: 0.9;
+        }
+
+        .video-background video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            transform: translate(-50%, -50%);
+            z-index: 0;
+        }
+
+        /* Animated Gradient Background */
+        .gradient-bg {
+            background: linear-gradient(-45deg, var(--gradient-1), var(--gradient-2), var(--gradient-3), var(--gradient-4));
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glass Morphism */
+        .glass {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        .glass-dark {
+            background: var(--glass-dark);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Floating Animation */
+        .float-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* Pulse Animation */
+        .pulse-animation {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Glow Effect */
+        .glow {
+            box-shadow: 0 0 20px var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .glow:hover {
+            box-shadow: 0 0 30px var(--primary);
+            transform: translateY(-2px);
+        }
+
+        /* Text Gradient */
+        .text-gradient {
+            background: linear-gradient(135deg, var(--gradient-1) 0%, var(--gradient-2) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Color Picker */
+        .color-picker {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            position: relative;
+        }
+
+        .color-option:hover {
+            transform: scale(1.2);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .color-option.active {
+            border-color: white;
+            transform: scale(1.1);
+        }
+
+        .color-option.active::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Color definitions for picker */
+        .color-purple { background: linear-gradient(135deg, #8b5cf6, #ec4899); }
+        .color-ocean { background: linear-gradient(135deg, #0ea5e9, #06b6d4); }
+        .color-emerald { background: linear-gradient(135deg, #10b981, #34d399); }
+        .color-sunset { background: linear-gradient(135deg, #f97316, #fb923c); }
+        .color-rose { background: linear-gradient(135deg, #f43f5e, #fb7185); }
+        .color-amber { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+        .color-cyan { background: linear-gradient(135deg, #06b6d4, #22d3ee); }
+
+        /* Chatbot Styles */
+        .chatbot-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+        .chatbot-bubble {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gradient-1) 0%, var(--gradient-2) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .chatbot-bubble:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .chatbot-window {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            width: 380px;
+            height: 500px;
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .chatbot-header {
+            background: linear-gradient(135deg, var(--gradient-1) 0%, var(--gradient-2) 100%);
+            padding: 20px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chatbot-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 15px;
+            animation: messageSlide 0.3s ease;
+        }
+
+        @keyframes messageSlide {
+            from {
+                transform: translateX(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .message.user {
+            background: var(--primary);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.bot {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+
+        .chatbot-input {
+            padding: 15px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+        }
+
+        .chatbot-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 25px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        .chatbot-input button {
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .chatbot-input button:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+
+        /* Loading Animation */
+        .loader {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Map Container */
+        #map {
+            height: 400px;
+            border-radius: 20px;
+            z-index: 1;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Audio Controls */
+        .audio-controls {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .audio-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        .audio-btn:hover {
+            transform: scale(1.1);
+            background: var(--glass-dark);
+        }
+
+        /* Card Animations */
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Search Input Animation */
+        .search-input {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .search-input::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .search-input:focus-within::before {
+            left: 100%;
+        }
+
+        /* Weather Icon Animation */
+        .weather-icon {
+            font-size: 3rem;
+            animation: weatherFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes weatherFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Language Dropdown Styles */
+        #languageSelect {
+            background-color: var(--select-bg);
+            color: var(--select-text);
+            border: 1px solid var(--select-border);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        #languageSelect:hover {
+            border-color: var(--primary);
+        }
+
+        #languageSelect:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary);
+        }
+
+        #languageSelect option {
+            background-color: var(--select-bg);
+            color: var(--select-text);
+            padding: 8px;
+        }
+
+        /* Voice Bar Animation */
+        .voice-bar {
+            width: 4px;
+            background: var(--primary);
+            animation: wave 1.2s infinite ease-in-out;
+        }
+
+        .voice-bar:nth-child(1) { animation-delay: -1.2s; height: 10px; }
+        .voice-bar:nth-child(2) { animation-delay: -1.1s; height: 20px; }
+        .voice-bar:nth-child(3) { animation-delay: -1.0s; height: 15px; }
+        .voice-bar:nth-child(4) { animation-delay: -0.9s; height: 25px; }
+        .voice-bar:nth-child(5) { animation-delay: -0.8s; height: 18px; }
+
+        @keyframes wave {
+            0%, 40%, 100% { transform: scaleY(0.4); }
+            20% { transform: scaleY(1); }
+        }
+    </style>
+</head>
+<body data-theme="purple">
+    <!-- Background Video -->
+    <div class="video-background">
+        <video autoplay muted loop id="bgVideo">
+            <source src="https://www.w3schools.com/howto/rain.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <!-- Color Picker -->
+    <div class="color-picker">
+        <div class="color-option color-purple active" onclick="changeTheme('purple')" title="Purple Dream"></div>
+        <div class="color-option color-ocean" onclick="changeTheme('ocean')" title="Ocean Blue"></div>
+        <div class="color-option color-emerald" onclick="changeTheme('emerald')" title="Emerald Green"></div>
+        <div class="color-option color-sunset" onclick="changeTheme('sunset')" title="Sunset Orange"></div>
+        <div class="color-option color-rose" onclick="changeTheme('rose')" title="Rose Pink"></div>
+        <div class="color-option color-amber" onclick="changeTheme('amber')" title="Amber Gold"></div>
+        <div class="color-option color-cyan" onclick="changeTheme('cyan')" title="Cyan Teal"></div>
+    </div>
+
+    <!-- Audio Controls -->
+    <div class="audio-controls">
+        <button class="audio-btn" onclick="toggleVideo()">
+            <i class="fas fa-video"></i>
+        </button>
+        <button class="audio-btn" onclick="toggleAudio()">
+            <i class="fas fa-volume-up" id="audioIcon"></i>
+        </button>
+    </div>
+
+    <!-- Chatbot -->
+    <div class="chatbot-container">
+        <div class="chatbot-bubble" onclick="toggleChatbot()">
+            <i class="fas fa-comments text-white text-2xl"></i>
+        </div>
+        <div class="chatbot-window" id="chatbotWindow">
+            <div class="chatbot-header">
+                <div>
+                    <h3 class="font-bold">City Assistant</h3>
+                    <p class="text-xs opacity-90">Ask me anything about cities!</p>
+                </div>
+                <button onclick="toggleChatbot()" class="text-white hover:opacity-80">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="chatbot-messages" id="chatMessages">
+                <div class="message bot">
+                    Hello! I'm your city assistant. How can I help you today?
+                </div>
+            </div>
+            <div class="chatbot-input">
+                <input type="text" id="chatInput" placeholder="Type your message..." onkeypress="handleChatInput(event)">
+                <button onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="glass text-white shadow-2xl relative overflow-hidden">
+        <div class="absolute inset-0 gradient-bg opacity-90"></div>
+        <div class="container mx-auto px-4 py-8 relative z-10">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4" data-aos="fade-right">
+                    <div class="float-animation">
+                        <i class="fas fa-globe-americas text-4xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold">City Intelligence</h1>
+                        <p class="text-sm opacity-90">Geo-Time Assistant</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4" data-aos="fade-left">
+                    <select id="languageSelect" class="px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/50">
+                        <option value="en">English</option>
+                        <option value="es">Español</option>
+                        <option value="fr">Français</option>
+                        <option value="de">Deutsch</option>
+                        <option value="zh">中文</option>
+                        <option value="ja">日本語</option>
+                        <option value="ar">العربية</option>
+                    </select>
+                    <button id="voiceToggle" class="glass p-3 rounded-lg hover:bg-white/30 transition">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8 relative z-10">
+        <!-- Search Section -->
+        <section class="mb-8" data-aos="fade-up">
+            <div class="glass-dark rounded-2xl shadow-2xl p-8 card-hover">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-1 relative search-input">
+                        <input 
+                            type="text" 
+                            id="cityInput" 
+                            placeholder="Enter a city name..." 
+                            class="w-full px-6 py-4 pr-16 border-2 border-white/20 rounded-xl focus:outline-none focus:border-purple-400 transition bg-white/10 text-white placeholder-white/70"
+                        >
+                        <button id="searchBtn" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-xl hover:scale-105 transition">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    <button id="voiceSearchBtn" class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-4 rounded-xl hover:scale-105 transition flex items-center justify-center gap-2 glow">
+                        <i class="fas fa-microphone"></i>
+                        <span>Voice Search</span>
+                    </button>
+                </div>
+                
+                <!-- Voice Wave Animation -->
+                <div id="voiceWave" class="flex items-center gap-2 mt-4 hidden">
+                    <div class="voice-bar"></div>
+                    <div class="voice-bar"></div>
+                    <div class="voice-bar"></div>
+                    <div class="voice-bar"></div>
+                    <div class="voice-bar"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search History -->
+        <section class="mb-8" data-aos="fade-up" data-aos-delay="100">
+            <div class="glass-dark rounded-2xl shadow-2xl p-6 card-hover">
+                <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                    <i class="fas fa-history text-purple-400"></i>
+                    Recent Searches
+                </h2>
+                <div id="searchHistory" class="flex flex-wrap gap-2">
+                    <!-- History items will be added here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content Grid -->
+        <div id="cityInfo" class="hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Left Column - Basic Info -->
+                <div class="lg:col-span-1 space-y-6">
+                    <!-- City Overview Card -->
+                    <div class="glass-dark rounded-2xl shadow-2xl p-6 card-hover" data-aos="fade-right">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 id="cityName" class="text-2xl font-bold text-gradient"></h2>
+                            <img id="countryFlag" class="w-12 h-8 rounded shadow" alt="Country Flag">
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-map-marker-alt text-purple-400"></i>
+                                <span id="countryName"></span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-landmark text-purple-400"></i>
+                                <span>Capital: <span id="capitalCity" class="font-medium"></span></span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-globe text-purple-400"></i>
+                                <span>Coordinates: <span id="coordinates" class="font-medium"></span></span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-users text-purple-400"></i>
+                                <span>Population: <span id="population" class="font-medium"></span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Time & Weather Card -->
+                    <div class="glass-dark rounded-2xl shadow-2xl p-6 card-hover" data-aos="fade-right" data-aos-delay="100">
+                        <h3 class="text-lg font-semibold mb-4">Current Conditions</h3>
+                        <div class="space-y-4">
+                            <div class="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl p-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm opacity-90">Local Time</p>
+                                        <p id="localTime" class="text-2xl font-bold"></p>
+                                        <p id="timezone" class="text-sm opacity-90"></p>
+                                    </div>
+                                    <i class="fas fa-clock text-3xl opacity-50 float-animation"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white/10 rounded-xl p-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm opacity-90">Weather</p>
+                                        <p id="temperature" class="text-2xl font-bold"></p>
+                                        <p id="weatherCondition" class="text-sm opacity-90"></p>
+                                    </div>
+                                    <i id="weatherIcon" class="weather-icon text-blue-400"></i>
+                                </div>
+                                <div class="mt-3 grid grid-cols-2 gap-2 text-sm">
+                                    <div class="flex items-center gap-1">
+                                        <i class="fas fa-tint text-blue-400"></i>
+                                        <span>Humidity: <span id="humidity"></span>%</span>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <i class="fas fa-wind text-gray-400"></i>
+                                        <span>Wind: <span id="windSpeed"></span> m/s</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Currency Card -->
+                    <div class="glass-dark rounded-2xl shadow-2xl p-6 card-hover" data-aos="fade-right" data-aos-delay="200">
+                        <h3 class="text-lg font-semibold mb-4">Currency</h3>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p id="currencyName" class="text-xl font-bold"></p>
+                                <p class="text-sm opacity-90">1 USD = <span id="exchangeRate" class="font-medium"></span></p>
+                            </div>
+                            <i class="fas fa-coins text-3xl text-yellow-400 float-animation"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Middle Column - Description & Map -->
+                <div class="lg:col-span-1 space-y-6">
+                    <!-- City Description -->
+                    <div class="glass-dark rounded-2xl shadow-2xl p-6 card-hover" data-aos="fade-up">
+                        <h3 class="text-lg font-semibold mb-4">About This City</h3>
+                        <p id="cityDescription" class="leading-relaxed opacity-90"></p>
+                        
+                        <div class="mt-4 space-y-2">
+                            <div class="flex items-start gap-2">
+                                <i class="fas fa-briefcase text-purple-400 mt-1"></i>
+                                <div>
+                                    <p class="text-sm font-medium">Economy</p>
+                                    <p id="economyInfo" class="text-sm opacity-90"></p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i class="fas fa-palette text-purple-400 mt-1"></i>
+                                <div>
+                                    <p class="text-sm font-medium">Culture</p>
+                                    <p id="cultureInfo" class="text-sm opacity-90"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Map -->
+                    <div class="glass-dark rounded-2xl shadow-2xl p-6 card-hover" data-aos="fade-up" data-aos-delay="100">
+                        <h3 class="text-lg font-semibold mb-4">Location Map</h3>
+                        <div id="map"></div>
+                    </div>
+                </div>
+
+                <!-- Right Column - Additional Info -->
+                <div class="lg:col-span-1 space-y-6">
+                    <!-- Nearby Cities -->
+                    <div class="glass-dark rounded-2xl shadow-2xl p-6 card-hover" data-aos="fade-left">
+                        <h3 class="text-lg font-semibold mb-4">Nearby Cities</h3>
+                        <div id="nearbyCities" class="space-y-3">
+                            <!-- Nearby cities will be added here -->
+                        </div>
+                    </div>
+
+                    <!-- Travel Info -->
+                    <div class="glass-dark rounded-2xl shadow-2xl p-6 card-hover" data-aos="fade-left" data-aos-delay="100">
+                        <h3 class="text-lg font-semibold mb-4">Travel Information</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-calendar-alt text-purple-400"></i>
+                                <div>
+                                    <p class="text-sm font-medium">Best Time to Visit</p>
+                                    <p id="bestTimeToVisit" class="text-sm opacity-90"></p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-shield-alt text-purple-400"></i>
+                                <div>
+                                    <p class="text-sm font-medium">Safety Index</p>
+                                    <div class="flex items-center gap-2">
+                                        <div class="flex-1 bg-white/20 rounded-full h-2">
+                                            <div id="safetyBar" class="bg-green-500 h-2 rounded-full"></div>
+                                        </div>
+                                        <span id="safetyScore" class="text-sm font-medium"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-clock text-purple-400"></i>
+                                <div>
+                                    <p class="text-sm font-medium">Time Difference</p>
+                                    <p id="timeDifference" class="text-sm opacity-90"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Local Events -->
+                    <div class="glass-dark rounded-2xl shadow-2xl p-6 card-hover" data-aos="fade-left" data-aos-delay="200">
+                        <h3 class="text-lg font-semibold mb-4">Upcoming Events & Holidays</h3>
+                        <div id="localEvents" class="space-y-2">
+                            <!-- Events will be added here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div class="glass-dark rounded-2xl p-8 flex flex-col items-center">
+                <div class="loader mb-4"></div>
+                <p class="text-white">Fetching city information...</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass text-white mt-12 py-6 relative z-10">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2024 City Intelligence & Geo-Time Assistant. Powered by AI.</p>
+        </div>
+    </footer>
+
+    <!-- Audio Element -->
+    <audio id="bgAudio" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Leaflet JS for maps -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- AOS Animation JS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            once: true
+        });
+
+        // Global variables
+        let map = null;
+        let currentMarker = null;
+        let searchHistory = JSON.parse(localStorage.getItem('citySearchHistory')) || [];
+        let currentLanguage = 'en';
+        let isListening = false;
+        let recognition = null;
+        let chatbotOpen = false;
+        let videoPlaying = true;
+        let audioPlaying = false;
+
+        // Initialize speech recognition
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('cityInput').value = transcript;
+                searchCity();
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error:', event.error);
+                stopVoiceSearch();
+            };
+
+            recognition.onend = function() {
+                stopVoiceSearch();
+            };
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            updateSearchHistory();
+            
+            // Event listeners
+            document.getElementById('searchBtn').addEventListener('click', searchCity);
+            document.getElementById('cityInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') searchCity();
+            });
+            
+            document.getElementById('voiceSearchBtn').addEventListener('click', toggleVoiceSearch);
+            document.getElementById('voiceToggle').addEventListener('click', toggleVoiceOutput);
+            
+            document.getElementById('languageSelect').addEventListener('change', function(e) {
+                currentLanguage = e.target.value;
+                if (recognition) {
+                    recognition.lang = getLanguageCode(currentLanguage);
+                }
+            });
+
+            // Load saved theme
+            const savedTheme = localStorage.getItem('colorTheme') || 'purple';
+            changeTheme(savedTheme);
+        });
+
+        // Theme Change Function
+        function changeTheme(themeName) {
+            const body = document.body;
+            body.setAttribute('data-theme', themeName);
+            
+            // Update active color in picker
+            document.querySelectorAll('.color-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            document.querySelector(`.color-${themeName}`).classList.add('active');
+            
+            // Save theme preference
+            localStorage.setItem('colorTheme', themeName);
+            
+            // Update dynamic gradients
+            updateDynamicGradients();
+        }
+
+        // Update dynamic gradients throughout the page
+        function updateDynamicGradients() {
+            const style = document.createElement('style');
+            style.textContent = `
+                .dynamic-gradient {
+                    background: linear-gradient(135deg, var(--gradient-1) 0%, var(--gradient-2) 100%);
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // Video/Audio Controls
+        function toggleVideo() {
+            const video = document.getElementById('bgVideo');
+            videoPlaying = !videoPlaying;
+            video.style.display = videoPlaying ? 'block' : 'none';
+        }
+
+        function toggleAudio() {
+            const audio = document.getElementById('bgAudio');
+            const icon = document.getElementById('audioIcon');
+            
+            if (audioPlaying) {
+                audio.pause();
+                icon.className = 'fas fa-volume-mute';
+            } else {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+                icon.className = 'fas fa-volume-up';
+            }
+            audioPlaying = !audioPlaying;
+        }
+
+        // Chatbot Functions
+        function toggleChatbot() {
+            const chatWindow = document.getElementById('chatbotWindow');
+            chatbotOpen = !chatbotOpen;
+            chatWindow.style.display = chatbotOpen ? 'flex' : 'none';
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addMessage(message, 'user');
+            input.value = '';
+            
+            // Simulate bot response
+            setTimeout(() => {
+                const responses = [
+                    "That's interesting! Tell me more about what you'd like to know.",
+                    "I can help you find information about cities worldwide. What city are you interested in?",
+                    "Great question! Let me help you with that.",
+                    "I'm here to assist you with city information, weather, and travel details.",
+                    "Would you like to know about the weather, culture, or attractions in a specific city?"
+                ];
+                const response = responses[Math.floor(Math.random() * responses.length)];
+                addMessage(response, 'bot');
+            }, 1000);
+        }
+
+        function addMessage(text, sender) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            messageDiv.textContent = text;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function handleChatInput(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Toggle voice search
+        function toggleVoiceSearch() {
+            if (!recognition) {
+                showNotification('Speech recognition is not supported in your browser.', 'error');
+                return;
+            }
+
+            if (isListening) {
+                stopVoiceSearch();
+            } else {
+                startVoiceSearch();
+            }
+        }
+
+        function startVoiceSearch() {
+            isListening = true;
+            document.getElementById('voiceWave').classList.remove('hidden');
+            document.getElementById('voiceSearchBtn').style.background = 'var(--primary)';
+            recognition.start();
+        }
+
+        function stopVoiceSearch() {
+            isListening = false;
+            document.getElementById('voiceWave').classList.add('hidden');
+            document.getElementById('voiceSearchBtn').style.background = '';
+            if (recognition) recognition.stop();
+        }
+
+        // Toggle voice output
+        function toggleVoiceOutput() {
+            const btn = document.getElementById('voiceToggle');
+            btn.classList.toggle('bg-purple-600');
+        }
+
+        // Speak text
+        function speakText(text) {
+            if (!('speechSynthesis' in window)) return;
+            
+            const btn = document.getElementById('voiceToggle');
+            if (!btn.classList.contains('bg-purple-600')) return;
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = getLanguageCode(currentLanguage);
+            speechSynthesis.speak(utterance);
+        }
+
+        // Get language code for speech recognition
+        function getLanguageCode(lang) {
+            const codes = {
+                'en': 'en-US',
+                'es': 'es-ES',
+                'fr': 'fr-FR',
+                'de': 'de-DE',
+                'zh': 'zh-CN',
+                'ja': 'ja-JP',
+                'ar': 'ar-SA'
+            };
+            return codes[lang] || 'en-US';
+        }
+
+        // Show notification
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-20 right-4 px-6 py-3 rounded-lg text-white font-medium z-50 transform translate-x-full transition-transform duration-300`;
+            notification.style.background = type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #ef4444, #dc2626)';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(150%)';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Main search function
+        function searchCity() {
+            const cityName = document.getElementById('cityInput').value.trim();
+            
+            if (!cityName) {
+                showNotification('Please enter a city name', 'error');
+                return;
+            }
+
+            showLoading(true);
+            
+            try {
+                const cityData = getCityData(cityName);
+                
+                if (!cityData) {
+                    showNotification('City not found. Please try another city name.', 'error');
+                    showLoading(false);
+                    return;
+                }
+
+                updateCityInfo(cityData);
+                addToSearchHistory(cityName);
+                
+                const summary = `${cityData.name} is a city in ${cityData.country}. Current time is ${cityData.localTime} and temperature is ${cityData.temperature}°C.`;
+                speakText(summary);
+                
+                showNotification('City information loaded successfully', 'success');
+                
+            } catch (error) {
+                console.error('Error fetching city data:', error);
+                showNotification('An error occurred while fetching city information. Please try again.', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Get city data
+        function getCityData(cityName) {
+            const cityDatabase = {
+                'paris': {
+                    name: 'Paris',
+                    country: 'France',
+                    countryCode: 'FR',
+                    capital: 'Paris',
+                    lat: 48.8566,
+                    lon: 2.3522,
+                    population: '2.2 million',
+                    description: 'Paris, the capital of France, is renowned for its art, fashion, gastronomy, and culture. Known as the "City of Light," it features iconic landmarks like the Eiffel Tower, Louvre Museum, and Notre-Dame Cathedral.',
+                    economy: 'Tourism, fashion, luxury goods, and technology sectors drive Paris\' economy. It\'s a global hub for business and innovation.',
+                    culture: 'Rich in history, art, and culinary traditions. Home to world-class museums, theaters, and a vibrant café culture.',
+                    timezone: 'CET (UTC+1)',
+                    currency: 'Euro (EUR)',
+                    exchangeRate: 0.92,
+                    bestTimeToVisit: 'April to June, September to October',
+                    safetyIndex: 75,
+                    nearbyCities: [
+                        { name: 'London', distance: 344 },
+                        { name: 'Brussels', distance: 265 },
+                        { name: 'Amsterdam', distance: 430 }
+                    ],
+                    events: [
+                        { name: 'Bastille Day', date: 'July 14' },
+                        { name: 'Paris Fashion Week', date: 'September/October' }
+                    ]
+                },
+                'tokyo': {
+                    name: 'Tokyo',
+                    country: 'Japan',
+                    countryCode: 'JP',
+                    capital: 'Tokyo',
+                    lat: 35.6762,
+                    lon: 139.6503,
+                    population: '14 million',
+                    description: 'Tokyo, Japan\'s bustling capital, blends the ultramodern with the traditional. From neon-lit skyscrapers to historic temples, this megacity offers endless exploration.',
+                    economy: 'Technology, finance, and manufacturing power Tokyo\'s economy. It\'s a major global financial center.',
+                    culture: 'Unique blend of ancient traditions and cutting-edge pop culture. Famous for anime, cuisine, and meticulous craftsmanship.',
+                    timezone: 'JST (UTC+9)',
+                    currency: 'Japanese Yen (JPY)',
+                    exchangeRate: 149.50,
+                    bestTimeToVisit: 'March to May, October to November',
+                    safetyIndex: 88,
+                    nearbyCities: [
+                        { name: 'Yokohama', distance: 28 },
+                        { name: 'Osaka', distance: 393 },
+                        { name: 'Kyoto', distance: 367 }
+                    ],
+                    events: [
+                        { name: 'Cherry Blossom Festival', date: 'March-April' },
+                        { name: 'Tokyo Game Show', date: 'September' }
+                    ]
+                },
+                'new york': {
+                    name: 'New York',
+                    country: 'United States',
+                    countryCode: 'US',
+                    capital: 'Washington D.C.',
+                    lat: 40.7128,
+                    lon: -74.0060,
+                    population: '8.3 million',
+                    description: 'New York City, the "Big Apple," is a global hub of commerce, finance, arts, fashion, and entertainment. Home to iconic landmarks like Times Square, Central Park, and the Statue of Liberty.',
+                    economy: 'Finance, media, technology, and tourism drive NYC\'s diverse economy. Wall Street is the world\'s financial center.',
+                    culture: 'Melting pot of cultures with world-class museums, Broadway theaters, and diverse culinary scene.',
+                    timezone: 'EST (UTC-5)',
+                    currency: 'US Dollar (USD)',
+                    exchangeRate: 1.00,
+                    bestTimeToVisit: 'April to June, September to November',
+                    safetyIndex: 72,
+                    nearbyCities: [
+                        { name: 'Boston', distance: 306 },
+                        { name: 'Philadelphia', distance: 130 },
+                        { name: 'Washington D.C.', distance: 366 }
+                    ],
+                    events: [
+                        { name: 'Times Square New Year\'s Eve', date: 'December 31' },
+                        { name: 'Macy\'s Thanksgiving Parade', date: 'November' }
+                    ]
+                },
+                'london': {
+                    name: 'London',
+                    country: 'United Kingdom',
+                    countryCode: 'GB',
+                    capital: 'London',
+                    lat: 51.5074,
+                    lon: -0.1278,
+                    population: '9 million',
+                    description: 'London, the capital of England and the UK, is a city steeped in history. From the Tower of London to Buckingham Palace, it offers a perfect blend of royal heritage and modern innovation.',
+                    economy: 'Finance, technology, and creative industries drive London\'s economy. The City of London is a major financial center.',
+                    culture: 'Rich literary, theatrical, and musical heritage. World-renowned museums, galleries, and diverse neighborhoods.',
+                    timezone: 'GMT (UTC+0)',
+                    currency: 'British Pound (GBP)',
+                    exchangeRate: 0.79,
+                    bestTimeToVisit: 'May to September',
+                    safetyIndex: 74,
+                    nearbyCities: [
+                        { name: 'Cambridge', distance: 86 },
+                        { name: 'Oxford', distance: 87 },
+                        { name: 'Brighton', distance: 76 }
+                    ],
+                    events: [
+                        { name: 'Notting Hill Carnival', date: 'August' },
+                        { name: 'Wimbledon', date: 'July' }
+                    ]
+                },
+                'dubai': {
+                    name: 'Dubai',
+                    country: 'United Arab Emirates',
+                    countryCode: 'AE',
+                    capital: 'Abu Dhabi',
+                    lat: 25.2048,
+                    lon: 55.2708,
+                    population: '3.5 million',
+                    description: 'Dubai is a city of superlatives, home to the world\'s tallest building, largest shopping mall, and most luxurious hotels. This desert metropolis combines traditional Arabian culture with futuristic innovation.',
+                    economy: 'Tourism, real estate, finance, and trade drive Dubai\'s economy. It\'s a major business hub in the Middle East.',
+                    culture: 'Blend of traditional Emirati culture with international influences. Known for luxury shopping and vibrant nightlife.',
+                    timezone: 'GST (UTC+4)',
+                    currency: 'UAE Dirham (AED)',
+                    exchangeRate: 3.67,
+                    bestTimeToVisit: 'November to March',
+                    safetyIndex: 85,
+                    nearbyCities: [
+                        { name: 'Abu Dhabi', distance: 139 },
+                        { name: 'Sharjah', distance: 33 },
+                        { name: 'Ras Al Khaimah', distance: 102 }
+                    ],
+                    events: [
+                        { name: 'Dubai Shopping Festival', date: 'December-January' },
+                        { name: 'Dubai Expo', date: 'October-March' }
+                    ]
+                }
+            };
+
+            const weatherConditions = [
+                { condition: 'Clear', icon: 'fa-sun', temp: 22, humidity: 45, wind: 3.2 },
+                { condition: 'Partly Cloudy', icon: 'fa-cloud-sun', temp: 19, humidity: 60, wind: 4.1 },
+                { condition: 'Cloudy', icon: 'fa-cloud', temp: 17, humidity: 70, wind: 5.5 },
+                { condition: 'Rainy', icon: 'fa-cloud-rain', temp: 15, humidity: 85, wind: 6.2 }
+            ];
+
+            const cityKey = cityName.toLowerCase();
+            let cityData = cityDatabase[cityKey];
+            
+            if (!cityData) {
+                for (const key in cityDatabase) {
+                    if (key.includes(cityKey) || cityDatabase[key].name.toLowerCase().includes(cityKey)) {
+                        cityData = cityDatabase[key];
+                        break;
+                    }
+                }
+            }
+
+            if (!cityData) return null;
+
+            const now = new Date();
+            const weather = weatherConditions[Math.floor(Math.random() * weatherConditions.length)];
+            
+            cityData.localTime = now.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                timeZone: getTimezone(cityData.timezone)
+            });
+            cityData.temperature = weather.temp;
+            cityData.weatherCondition = weather.condition;
+            cityData.weatherIcon = weather.icon;
+            cityData.humidity = weather.humidity;
+            cityData.windSpeed = weather.wind;
+
+            return cityData;
+        }
+
+        // Get timezone from string
+        function getTimezone(timezoneStr) {
+            const timezones = {
+                'CET (UTC+1)': 'Europe/Paris',
+                'JST (UTC+9)': 'Asia/Tokyo',
+                'EST (UTC-5)': 'America/New_York',
+                'GMT (UTC+0)': 'Europe/London',
+                'GST (UTC+4)': 'Asia/Dubai'
+            };
+            return timezones[timezoneStr] || 'UTC';
+        }
+
+        // Update UI with city information
+        function updateCityInfo(cityData) {
+            document.getElementById('cityInfo').classList.remove('hidden');
+            
+            // Update basic info
+            document.getElementById('cityName').textContent = cityData.name;
+            document.getElementById('countryName').textContent = cityData.country;
+            document.getElementById('capitalCity').textContent = cityData.capital;
+            document.getElementById('coordinates').textContent = `${cityData.lat.toFixed(4)}, ${cityData.lon.toFixed(4)}`;
+            document.getElementById('population').textContent = cityData.population;
+            
+            // Update flag
+            const flagUrl = `https://flagcdn.com/w80/${cityData.countryCode.toLowerCase()}.png`;
+            document.getElementById('countryFlag').src = flagUrl;
+            
+            // Update time and weather
+            document.getElementById('localTime').textContent = cityData.localTime;
+            document.getElementById('timezone').textContent = cityData.timezone;
+            document.getElementById('temperature').textContent = `${cityData.temperature}°C`;
+            document.getElementById('weatherCondition').textContent = cityData.weatherCondition;
+            document.getElementById('weatherIcon').className = `weather-icon fas ${cityData.weatherIcon}`;
+            document.getElementById('humidity').textContent = cityData.humidity;
+            document.getElementById('windSpeed').textContent = cityData.windSpeed;
+            
+            // Update description
+            document.getElementById('cityDescription').textContent = cityData.description;
+            document.getElementById('economyInfo').textContent = cityData.economy;
+            document.getElementById('cultureInfo').textContent = cityData.culture;
+            
+            // Update currency
+            document.getElementById('currencyName').textContent = cityData.currency;
+            document.getElementById('exchangeRate').textContent = cityData.exchangeRate.toFixed(2);
+            
+            // Update nearby cities
+            const nearbyCitiesHtml = cityData.nearbyCities.map(city => `
+                <div class="flex items-center justify-between p-3 bg-white/10 rounded-xl hover:bg-white/20 transition">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-map-pin text-purple-400"></i>
+                        <span class="font-medium">${city.name}</span>
+                    </div>
+                    <span class="text-sm opacity-90">${city.distance} km</span>
+                </div>
+            `).join('');
+            document.getElementById('nearbyCities').innerHTML = nearbyCitiesHtml;
+            
+            // Update travel info
+            document.getElementById('bestTimeToVisit').textContent = cityData.bestTimeToVisit;
+            document.getElementById('safetyBar').style.width = `${cityData.safetyIndex}%`;
+            document.getElementById('safetyBar').className = `h-2 rounded-full ${cityData.safetyIndex > 70 ? 'bg-green-500' : cityData.safetyIndex > 50 ? 'bg-yellow-500' : 'bg-red-500'}`;
+            document.getElementById('safetyScore').textContent = `${cityData.safetyIndex}/100`;
+            
+            // Calculate time difference
+            const userTime = new Date();
+            const cityTime = new Date(userTime.toLocaleString("en-US", {timeZone: getTimezone(cityData.timezone)}));
+            const diffHours = Math.round((cityTime - userTime) / 3600000);
+            const diffText = diffHours > 0 ? `+${diffHours} hours` : `${diffHours} hours`;
+            document.getElementById('timeDifference').textContent = diffText;
+            
+            // Update events
+            const eventsHtml = cityData.events.map(event => `
+                <div class="flex items-center justify-between p-2 bg-purple-500/20 rounded-lg">
+                    <span class="text-sm font-medium">${event.name}</span>
+                    <span class="text-xs opacity-90">${event.date}</span>
+                </div>
+            `).join('');
+            document.getElementById('localEvents').innerHTML = eventsHtml;
+            
+            // Update map
+            updateMap(cityData.lat, cityData.lon, cityData.name);
+        }
+
+        // Update map
+        function updateMap(lat, lon, cityName) {
+            if (map) {
+                map.remove();
+            }
+            
+            map = L.map('map').setView([lat, lon], 10);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19,
+                language: 'en'
+            }).addTo(map);
+            
+            currentMarker = L.marker([lat, lon]).addTo(map)
+                .bindPopup(cityName)
+                .openPopup();
+        }
+
+        // Search history functions
+        function addToSearchHistory(cityName) {
+            searchHistory = searchHistory.filter(city => city.toLowerCase() !== cityName.toLowerCase());
+            searchHistory.unshift(cityName);
+            searchHistory = searchHistory.slice(0, 5);
+            localStorage.setItem('citySearchHistory', JSON.stringify(searchHistory));
+            updateSearchHistory();
+        }
+
+        function updateSearchHistory() {
+            const historyContainer = document.getElementById('searchHistory');
+            
+            if (searchHistory.length === 0) {
+                historyContainer.innerHTML = '<p class="text-white/70 text-sm">No recent searches</p>';
+                return;
+            }
+            
+            const historyHtml = searchHistory.map(city => `
+                <button onclick="searchHistoryCity('${city}')" class="px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition transform hover:scale-105">
+                    ${city}
+                </button>
+            `).join('');
+            
+            historyContainer.innerHTML = historyHtml;
+        }
+
+        function searchHistoryCity(cityName) {
+            document.getElementById('cityInput').value = cityName;
+            searchCity();
+        }
+
+        // Loading state
+        function showLoading(show) {
+            const loadingState = document.getElementById('loadingState');
+            if (show) {
+                loadingState.classList.remove('hidden');
+            } else {
+                loadingState.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
